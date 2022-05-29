@@ -20,7 +20,7 @@
             <div class="tasks">
                <h2 class="tasks__title">Виконувані завдання</h2>
                <div class="tasks__content">
-                  <ul name="ul">
+                  <ul class="task">
                      <li class="tasks__content__finish fa-solid"></li>
                      <li class="tasks__content__text">
                         <input name="name__task" type="text" value="" placeholder="введіть завдання">
@@ -47,7 +47,7 @@
          tasksContent: '.tasks__content',
          comletedTasks: '.completed__tasks__content',
          allLi: 'li',
-         allTasks: 'ul',
+         tasks: '.task',
       }
 
       let tasks = new Tasks(obj);

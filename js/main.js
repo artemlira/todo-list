@@ -1,112 +1,141 @@
 'use strict';
 
 class Tasks {
-   constructor({ wrapper, tasksContent, comletedTasks, allTasks, }) {
+   constructor({ wrapper, tasksContent, comletedTasks, tasks, }) {
       this.wrapper = document.querySelector(wrapper);
       this.tasksContent = this.wrapper.querySelector(tasksContent);
       this.comletedTasks = this.wrapper.querySelector(comletedTasks);
-      this.allTasks = document.getElementsByName(allTasks);
-      this.object = null;
+      this.tasks = document.querySelector(tasks);
+      this.objectAllTasks = null;
    }
 
-   localStorage() {
-      let tasks = [];
-      this.allTasks.forEach((v) => {
-         tasks.push({
-            text: v.children[1].children[0].value,
-            status: v.matches('.completed')
-         });
-      });
-      localStorage.setItem('task', JSON.stringify(tasks));
-      console.dir(tasks);
+   getlocalStorage() {
+      this.objectAllTasks = JSON.parse(localStorage.getItem('tasks'));
    }
 
-   loadStorage() {
-      document.addEventListener('DOMContentLoaded', () => {
-         this.object = localStorage.getItem('task');
-         this.object = JSON.parse(this.object);
-
-         if (this.object != null) {
-            this.allTasks = Array.prototype.slice.call(this.allTasks);
-
-            for (let i = 1; i < this.object.length; i++) {
-               this.allTasks.push(this.allTasks[0].cloneNode(true));
-            }
-
-            for (let i = 0; i < this.object.length; i++) {
-               this.allTasks[i].children[1].children[0].setAttribute('value', this.object[i].text);
-               if (this.object[i].status) {
-                  this.addClass(this.allTasks[i], 'completed');
-                  this.transferElement(this.allTasks[i]);
-                  this.addClass(this.allTasks[i].children[0], 'fa-circle-check');
-                  this.removeClass(this.allTasks[i].children[2], 'fa-circle-plus');
-                  this.addClass(this.allTasks[i].children[2], 'fa-circle-minus');
-               } else {
-                  this.allTasks[0].parentElement.append(this.allTasks[i]);
-               }
-            }
-         }
-      });
+   setLocalStorage() {
+      localStorage.setItem('tasks', JSON.stringify(this.objectAllTasks));
    }
 
    addTask() {
-      this.wrapper.addEventListener('click', (even) => {
-         let target = even.target;
-         if (target.matches('.tasks__content__add')) {
-            if (target.parentElement.matches('.completed')) {
-               this.removeElement(target.parentElement);
-            } else {
-               let copy = target.parentElement.cloneNode(true);
-               copy.children[1].lastElementChild.value = ''
-               target.parentElement.parentElement.append(copy);
-            }
-            this.localStorage();
+      this.tasksContent.append(this.tasks.cloneNode(true));
+   }
+
+
+
+   createWrapInProgress(elem) {
+      let copy = this.tasks.cloneNode(true);
+      copy.querySelector('input').value = elem;
+      this.tasksContent.append(copy);
+   }
+
+   createWrapInComleted(elem) {
+      let copy = this.tasks.cloneNode(true);
+      copy.querySelector('input').value = elem;
+      // copy.querySelector('.tasks__content__finish').classList.remove('tasks__content__finish');
+      copy.querySelector('fa-circle-plus').classList.add('fa-circle-minus');
+      copy.querySelector('fa-circle-plus').classList.remove('fa-circle-plus');
+      copy.querySelector('input').setAttribute('readonly', 'readonly');
+      this.comletedTasks.append(copy);
+   }
+
+   createAllWrap() {
+      for (let key in this.objectAllTasks) {
+         let text = this.objectAllTasks[key].text;
+         let status = this.objectAllTasks[key].status;
+         if (status == false) {
+            this.createWrapInProgress(text);
+         } else {
+            this.createWrapInComleted(text);
          }
-      });
+      }
    }
 
-   transferTasks() {
-      this.wrapper.addEventListener('click', (even) => {
-         let target = even.target;
-         if (target.matches('.tasks__content__finish')) {
-            if (target.nextElementSibling.children[0].value && target.parentNode.parentNode.childElementCount >= 2) {
-               this.addReadonly(target.nextElementSibling.children[0]);
-               this.addClass(target.parentElement, 'completed');
-               this.addClass(target, 'fa-circle-check');
-               this.removeClass(target.nextElementSibling.nextElementSibling, 'fa-circle-plus');
-               this.addClass(target.nextElementSibling.nextElementSibling, 'fa-circle-minus');
-               this.transferElement(target.parentElement);
 
-               this.localStorage();
-            }
-         }
-      });
+
+
+   click(even) {
+      let target = even.target;
+      let parent = target.closest('.tasks__content');
+      if (target.matches('.tasks__content__finish')) {
+         this.transferTasks(parent);
+      }
+      if (target.matches('.tasks__content__add')) {
+         this.addTask();
+      }
+      if (target.matches('.fa-circle-minus')) {
+         this.removeElement(parent);
+      }
+
+      // console.dir(target);
+      this.firstTask();
+      this.updateAllTasks();
+      this.setLocalStorage();
    }
 
-   removeClass(elem, className) {
-      elem.classList.remove(className);
+   input(even) {
+      let target = even.target;
+      if (target.localName == 'input') {
+         this.updateAllTasks();
+         this.setLocalStorage();
+      }
    }
+
+   transferTasks(elem) {
+
+      if (elem.querySelector('input').value != '') {
+         console.dir(elem.querySelector('.tasks__content__finish'));
+         elem.querySelector('.tasks__content__finish').classList.add('fa-circle-check');
+         elem.querySelector('.fa-circle-plus').classList.add('fa-circle-minus');
+         elem.querySelector('.fa-circle-plus').classList.remove('fa-circle-plus');
+         elem.querySelector('input').setAttribute('readonly', 'readonly');
+         this.comletedTasks.append(elem);
+      }
+   }
+
 
    removeElement(elem) {
       elem.remove();
    }
 
-   transferElement(elem) {
-      this.comletedTasks.insertAdjacentElement('afterBegin', elem);
+   clearAllTasks() {
+      this.tasksContent.innerHTML = '';
+      this.comletedTasks.innerHTML = '';
    }
 
-   addReadonly(elem) {
-      elem.setAttribute('readonly', 'readonly');
+
+   firstTask() {
+      console.dir(this.tasksContent.querySelectorAll('.task'));
+      if (this.tasksContent.querySelectorAll('.task').length == 0) {
+         this.addTask();
+      }
    }
 
-   addClass(elem, className) {
-      elem.classList.add(className);
+   updateAllTasks() {
+      this.objectAllTasks = {};
+      let allInput = this.wrapper.querySelectorAll('input');
+      allInput.forEach((elem, index) => {
+         this.objectAllTasks[index] = {};
+         this.objectAllTasks[index].text = elem.value;
+         let status = true;
+         if (elem.closest('.tasks__content')) {
+            status = false
+         }
+         this.objectAllTasks[index].status = status;
+      });
    }
+
 
    init() {
-      console.dir(this);
-      this.loadStorage();
+      this.clearAllTasks();
+      this.getlocalStorage();
+      this.firstTask()
+      // if (this.objectAllTasks == null) {
       this.addTask();
-      this.transferTasks();
+      // } else {
+      // this.createAllWrap();
+      // }
+      this.wrapper.addEventListener('click', this.click.bind(this));
+      this.wrapper.addEventListener('input', this.input.bind(this));
    }
 }
