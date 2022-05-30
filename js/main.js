@@ -32,6 +32,7 @@ class Tasks {
       copy.querySelector('input').value = elem;
       copy.querySelector('.tasks__content__finish').classList.add('fa-circle-check');
       copy.querySelector('.tasks__content__add').classList.add('fa-circle-minus');
+      copy.querySelector('.tasks__content__add').classList.remove('fa-circle-plus');
       copy.querySelector('input').setAttribute('readonly', 'readonly');
       this.comletedTasks.append(copy);
    }
