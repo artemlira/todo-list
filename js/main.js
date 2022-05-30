@@ -21,8 +21,6 @@ class Tasks {
       this.tasksContent.append(this.tasks.cloneNode(true));
    }
 
-
-
    createWrapInProgress(elem) {
       let copy = this.tasks.cloneNode(true);
       copy.querySelector('input').value = elem;
@@ -32,9 +30,8 @@ class Tasks {
    createWrapInComleted(elem) {
       let copy = this.tasks.cloneNode(true);
       copy.querySelector('input').value = elem;
-      // copy.querySelector('.tasks__content__finish').classList.remove('tasks__content__finish');
-      copy.querySelector('fa-circle-plus').classList.add('fa-circle-minus');
-      copy.querySelector('fa-circle-plus').classList.remove('fa-circle-plus');
+      copy.querySelector('.tasks__content__finish').classList.add('fa-circle-check');
+      copy.querySelector('.tasks__content__add').classList.add('fa-circle-minus');
       copy.querySelector('input').setAttribute('readonly', 'readonly');
       this.comletedTasks.append(copy);
    }
@@ -51,23 +48,19 @@ class Tasks {
       }
    }
 
-
-
-
    click(even) {
       let target = even.target;
-      let parent = target.closest('.tasks__content');
+      let parent = target.closest('.task');
       if (target.matches('.tasks__content__finish')) {
          this.transferTasks(parent);
       }
-      if (target.matches('.tasks__content__add')) {
+      if (target.matches('.fa-circle-plus')) {
          this.addTask();
       }
       if (target.matches('.fa-circle-minus')) {
          this.removeElement(parent);
       }
 
-      // console.dir(target);
       this.firstTask();
       this.updateAllTasks();
       this.setLocalStorage();
@@ -82,9 +75,7 @@ class Tasks {
    }
 
    transferTasks(elem) {
-
-      if (elem.querySelector('input').value != '') {
-         console.dir(elem.querySelector('.tasks__content__finish'));
+      if (elem.querySelector('input').value) {
          elem.querySelector('.tasks__content__finish').classList.add('fa-circle-check');
          elem.querySelector('.fa-circle-plus').classList.add('fa-circle-minus');
          elem.querySelector('.fa-circle-plus').classList.remove('fa-circle-plus');
@@ -92,7 +83,6 @@ class Tasks {
          this.comletedTasks.append(elem);
       }
    }
-
 
    removeElement(elem) {
       elem.remove();
@@ -105,7 +95,6 @@ class Tasks {
 
 
    firstTask() {
-      console.dir(this.tasksContent.querySelectorAll('.task'));
       if (this.tasksContent.querySelectorAll('.task').length == 0) {
          this.addTask();
       }
@@ -129,12 +118,11 @@ class Tasks {
    init() {
       this.clearAllTasks();
       this.getlocalStorage();
-      this.firstTask()
-      // if (this.objectAllTasks == null) {
-      this.addTask();
-      // } else {
-      // this.createAllWrap();
-      // }
+      if (this.objectAllTasks == null) {
+         this.addTask();
+      } else {
+         this.createAllWrap();
+      }
       this.wrapper.addEventListener('click', this.click.bind(this));
       this.wrapper.addEventListener('input', this.input.bind(this));
    }
